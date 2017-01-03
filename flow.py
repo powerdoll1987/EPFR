@@ -10,31 +10,20 @@ import numpy as np
 import os
 
 
-# 累加函数
-def accum(s):
-    i = 1
-    while i < len(s):
-        s[i] = s[i-1] + s[i]
-        i += 1
-    return s
-
 
 # 根据每日flow计算累计flow
 def accumFlow(data):
     #先转换成每列一个ticker，计算累计flow
     d = data.copy()
     tickerList = d.ix[:, 'Ticker'].unique().tolist()
-    l = []
-    for a in tickerList:
-        s = d[d['Ticker'] == a].ix[:,'Flow'].copy()
-        s = accum(s)
-        s.name = a
-        l.append(s)
     dataAccum = pd.DataFrame()
-    i = 0
-    while i < len(l):
-        dataAccum = pd.concat([dataAccum, l[i]], axis = 1)
-        i += 1
+    for a in tickerList:
+        ss = d[d['Ticker'] == a].ix[:,'Flow'].cumsum()
+        ss.name = a
+        print(ss.name,ss.index[0],ss.index[-1],len(ss.index))
+        dataAccum = dataAccum.join(ss , how = 'outer')
+#        dataAccum = pd.concat([dataAccum, ss],axis = 1)
+
     dataAccum = dataAccum.sort_index()   
     dataAccum.index.name = 'Date'
     dataAccum = dataAccum.fillna(method = 'ffill').fillna(0)
@@ -96,6 +85,20 @@ EPFR2TIC_1 = {
     'Western Europe-All MM Funds-MM':'.EUMMF Index',
     'Western Europe-FF-Equity':'.EUEF Index'
 }        
+
+EPFR2TIC_USSEC = {
+    'USA-Global Sector-Commodities/Materials-Equity-Global Sector-Equity': '.USMAT Index',
+    'USA-Global Sector-Consumer Goods-Equity-Global Sector-Equity': '.USCOM Index',
+    'USA-Global Sector-Energy-Equity-Global Sector-Equity': '.USENG Index',
+    'USA-Global Sector-Financials-Equity-Global Sector-Equity': '.USFIN Index',
+    'USA-Global Sector-Health Care/Biotech-Equity-Global Sector-Equity': '.USHEL Index',
+    'USA-Global Sector-Industrials-Equity-Global Sector-Equity': '.USIND Index',
+    'USA-Global Sector-Real Estate-Equity-Global Sector-Equity': '.USRET Index',
+    'USA-Global Sector-Technology-Equity-Global Sector-Equity': '.USTEC Index',
+    'USA-Global Sector-Telecom-Equity-Global Sector-Equity': '.USTEL Index',
+    'USA-Global Sector-Utilities-Equity-Global Sector-Equity': '.USUTL Index',
+    'USA-Global Sector-Infrastructure-Equity-Global Sector-Equity' : '.USINF Index'
+}
         
 # 读取EPFR数据，加一列彭博ticker
 def readEPFR2(path, dic):
@@ -144,9 +147,10 @@ def proc(suffix, dic):
     return data, dataAccum
 
 # 读入EPFR数据
-# 一组数据包含3个部分，第一次读入的历史数据‘EPFROutput_1.xls’, 增量数据文件夹‘INCREMENTAL_1’, 导入彭博的结果文件‘EPFR_1.xlsx’
+# 一组数据包含4个部分，第一次读入的历史数据‘EPFROutput_1.xls’, 增量数据文件夹‘INCREMENTAL_1’, 导入彭博的结果文件‘EPFR_1.xlsx’和'EPFRAccum_1.xlsx'
 # 可以有多组，区分在于后缀。要新加一组就可以是‘EPFROutput_2.xls’,'INCREMENTAL_2','EPFR_2.xlsx',然后建一个dict映射
 if __name__ == '__main__':
     suffix = '1'
-    data, dataAccum = proc(suffix, EPFR2TIC_1)
+    data, dataAccum = proc(suffix, EPFR2TIC_1)     
+    suffix2 = 'USSEC'
     
