@@ -153,4 +153,5 @@ if __name__ == '__main__':
     suffix = '1'
     data, dataAccum = proc(suffix, EPFR2TIC_1)     
     suffix2 = 'USSEC'
+    data2, dataAccum2 = proc(suffix2, EPFR2TIC_USSEC)
     
