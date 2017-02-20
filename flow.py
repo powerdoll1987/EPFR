@@ -22,7 +22,7 @@ def accumFlow(data):
         ss.name = a
         print(ss.name,ss.index[0],ss.index[-1],len(ss.index))
         dataAccum = dataAccum.join(ss , how = 'outer')
-#        dataAccum = pd.concat([dataAccum, ss],axis = 1)
+#        dataAccum = pd.concat([dataAccum, ss],axis = 1) *concat有bug，刘威把它换成了join
 
     dataAccum = dataAccum.sort_index()   
     dataAccum.index.name = 'Date'
@@ -83,7 +83,7 @@ EPFR2TIC_1 = {
     'USA-North America-Equity':'.USEF Index',
     'USA-North America-Long Term Government-Bond':'.USLTGBF Index',
     'Western Europe-All MM Funds-MM':'.EUMMF Index',
-    'Western Europe-FF-Equity':'.EUEF Index'
+    'Western Europe-FF-Equity':'.EUEF Index',
 }        
 
 EPFR2TIC_USSEC = {
@@ -97,7 +97,11 @@ EPFR2TIC_USSEC = {
     'USA-Global Sector-Technology-Equity-Global Sector-Equity': '.USTEC Index',
     'USA-Global Sector-Telecom-Equity-Global Sector-Equity': '.USTEL Index',
     'USA-Global Sector-Utilities-Equity-Global Sector-Equity': '.USUTL Index',
-    'USA-Global Sector-Infrastructure-Equity-Global Sector-Equity' : '.USINF Index'
+    'USA-Global Sector-Infrastructure-Equity-Global Sector-Equity' : '.USINF Index',
+}
+
+EPFR2TIC_CUS = {
+    'North America-Asset Class-High Yield-Bond': '.USHYF Index',
 }
         
 # 读取EPFR数据，加一列彭博ticker
@@ -138,9 +142,9 @@ def proc(suffix, dic):
     for f in fileList:
         path = incPath + '\\' + f
         incData = readEPFR2(path, dic)
-        data = pd.concat([data, incData])
-        data = data.drop_duplicates()
-        data = data.sort_index()
+        data = pd.concat([data, incData])        
+    data = data.drop_duplicates()
+    data = data.sort_index()        
     data.to_excel(dataPath)
     dataAccum = accumFlow(data)
     dataAccum.to_excel(dataPath2)
@@ -154,4 +158,6 @@ if __name__ == '__main__':
     data, dataAccum = proc(suffix, EPFR2TIC_1)     
     suffix2 = 'USSEC'
     data2, dataAccum2 = proc(suffix2, EPFR2TIC_USSEC)
+    suffix3 = 'CUS'
+    data2, dataAccum3 = proc(suffix3, EPFR2TIC_CUS)
     
